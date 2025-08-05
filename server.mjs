@@ -6,6 +6,7 @@ const app = new express();
 /**Middleware using for parsing json */
 app.use(express.json());
 
+/*Users Data **/
 const users = [
   {
     id: "1",
@@ -33,10 +34,57 @@ const users = [
   },
 ];
 
+/**
+ * Function to find user
+ * Accept : Parameter id
+ * return a user object
+ *
+ */
 const findUser = (id) => {
   const user = users.find((user) => user.id == id);
   return user;
 };
+
+/*Logger MiddleWare */
+
+const logger = (req, res, next) => {
+  const start = Date.now(); // optional: track request time
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    console.log(
+      `[${new Date().toISOString()}] Method:${req.method} URL:${
+        req.originalUrl
+      } Status Code- ${res.statusCode} (${duration}ms)`
+    );
+  });
+
+  next(); // continue to the next middleware
+};
+
+/*Validation MiddleWare */
+const validateFields = (req, res, next) => {
+  const { firstName, lastName,hobby} = req.body;
+  if(req.method==="PUT"){
+    if(!firstName && !lastName && !hobby){
+      return res.status(400).json({message:"Validation Error!! Atleast one field are required"})
+    }
+  }
+
+  if(req.method==="POST"){
+  if (!firstName || !lastName || !hobby) {
+    return res
+      .status(400)
+      .json({
+        message: "Validation Error : FirstName , LastName and Hobby  are required !!!!",
+      });
+  }
+}
+  next();
+};
+
+/** Application Level Middleware */
+app.use(logger);
 
 /* Print the Welcome message on browser */
 app.get("/", (req, res) => {
@@ -64,14 +112,15 @@ app.get("/users/:id", (req, res) => {
     if (!user) {
       return res.status(404).json({ message: `User with ${id} Not found` });
     }
+    //give the user
     res.status(200).json({ user, message: "Success" });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
-/* Add the user */
-app.post("/user", (req, res) => {
+/* Add the user with route level Middleware */
+app.post("/user", validateFields, (req, res) => {
   try {
     //get the data from req body
     const user = req.body;
@@ -87,7 +136,7 @@ app.post("/user", (req, res) => {
 
 /*Update  the users */
 
-app.put("/user/:id", (req, res) => {
+app.put("/user/:id", validateFields, (req, res) => {
   const id = req.params.id;
   try {
     //get the user
@@ -97,7 +146,10 @@ app.put("/user/:id", (req, res) => {
     if (!user) {
       return res.status(404).json({ message: `User with ${id} Not found` });
     }
-    /*Update only fields which are provided in request body*/
+    /*Update only fields which are provided in request body
+     *Get the keys from req.body using Object.keys()
+     *Iterate the keys and update the value.
+     */
     const keys = Object.keys(req.body);
     keys.forEach((key) => {
       user[key] = req.body[key];
@@ -119,10 +171,9 @@ app.delete("/user/:id", (req, res) => {
     if (!user) {
       return res.status(404).json({ message: `User with ${id} Not found` });
     }
-    //Remove the user from users 
-    users.splice(parseInt(id)-1,1)
-    res.status(200).json({users,message:"Successfully Deleted"})
-
+    /**Remove the user using index find with user */
+    users.splice(parseInt(id) - 1, 1);
+    res.status(200).json({ users, message: "Successfully Deleted" });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
