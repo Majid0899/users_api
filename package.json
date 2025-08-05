@@ -1,0 +1,30 @@
+{
+  "name": "users_api",
+  "type":"module",
+  "version": "1.0.0",
+  "description": "manage list of users",
+  "main": "server.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev":"node server.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Majid0899/users_api.git"
+  },
+  "keywords": [
+    "nodejs",
+    "users",
+    "api",
+    "middlewares"
+  ],
+  "author": "MajidKhan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Majid0899/users_api/issues"
+  },
+  "homepage": "https://github.com/Majid0899/users_api#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
